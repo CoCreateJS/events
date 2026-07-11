@@ -1,3 +1,12 @@
+## [1.30.2](https://github.com/CoCreate-app/CoCreate-events/compare/v1.30.1...v1.30.2) (2026-07-11)
+
+
+### Bug Fixes
+
+* bump package versions ([d91a27d](https://github.com/CoCreate-app/CoCreate-events/commit/d91a27dd75f1b027ceed6b914f57415804ee8568))
+* removed post install and add add packages to apprved list ([54d1833](https://github.com/CoCreate-app/CoCreate-events/commit/54d1833e70b460993647f19b1517d54a14600a4a))
+* semantic version handling ([aee37b5](https://github.com/CoCreate-app/CoCreate-events/commit/aee37b53737328890a570f251d4dd4b77a99dbb6))
+
 ## [1.30.1](https://github.com/CoCreate-app/CoCreate-events/compare/v1.30.0...v1.30.1) (2026-03-05)
 
 
