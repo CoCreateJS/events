@@ -24,7 +24,7 @@ import { queryElements } from "@cocreate/utils";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
-import { getAttribute } from "@cocreate/element-prototype/src/getAttribute";
+import { getAttribute } from "@cocreate/element-prototype/src/getAttribute.js";
 
 const CoCreateEvents = {
     elements: new Map(),
