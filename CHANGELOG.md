@@ -1,3 +1,15 @@
+# [1.31.0](https://github.com/CoCreate-app/CoCreate-events/compare/v1.30.2...v1.31.0) (2026-07-17)
+
+
+### Bug Fixes
+
+* update import path for getAttribute to include file extension ([9dd6bf0](https://github.com/CoCreate-app/CoCreate-events/commit/9dd6bf094c712582c746b95c9376b410a3d8bf4c))
+
+
+### Features
+
+* update automated workflow and release configuration for improved semantic release handling ([413dba3](https://github.com/CoCreate-app/CoCreate-events/commit/413dba3a5e141937fe53dc271bdf377445809bd3))
+
 ## [1.30.2](https://github.com/CoCreate-app/CoCreate-events/compare/v1.30.1...v1.30.2) (2026-07-11)
 
 
