@@ -1,3 +1,10 @@
+## [1.31.1](https://github.com/CoCreate-app/CoCreate-events/compare/v1.31.0...v1.31.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* bump dependencies ([877691a](https://github.com/CoCreate-app/CoCreate-events/commit/877691ac04ba34c6838944cc238567af3101419d))
+
 # [1.31.0](https://github.com/CoCreate-app/CoCreate-events/compare/v1.30.2...v1.31.0) (2026-07-17)
 
 
