@@ -1,3 +1,10 @@
+## [1.31.2](https://github.com/CoCreate-app/CoCreate-events/compare/v1.31.1...v1.31.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* set default branch to main ([502cecb](https://github.com/CoCreate-app/CoCreate-events/commit/502cecb18cb93f5302de496db76ba596c11f39e7))
+
 ## [1.31.1](https://github.com/CoCreate-app/CoCreate-events/compare/v1.31.0...v1.31.1) (2026-07-17)
 
 
