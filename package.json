@@ -1,6 +1,6 @@
 {
   "name": "@cocreate/events",
-  "version": "1.31.2",
+  "version": "1.32.0",
   "description": "A simple events component in vanilla javascript. Easily configured using HTML5 attributes and/or JavaScript API.",
   "keywords": [
     "events",
