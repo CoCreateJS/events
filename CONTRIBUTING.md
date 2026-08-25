@@ -13,7 +13,7 @@ Fork the [project on Github](https://github.com/CoCreate-app/CoCreate-toggle) an
 ```
 git toggle https://github.com/contributor/CoCreate-toggle.git
 cd CoCreate-toggle
-git remote add upstream https://github.com/CoCreate-app/CoCreate-toggle.git
+git remote add upstream https://gitlab.com/cocreatejs/CoCreate-toggle.git
 ```
 
 ## Create a Topic Branch
