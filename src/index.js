@@ -59,11 +59,11 @@ const CoCreateEvents = {
         // Initialize from existing elements with [event-name]
         const customEventEls = document.querySelectorAll("[event-name]");
         const processedNames = new Set();
-        
+
         for (const customEventEl of customEventEls) {
             let names = customEventEl.getAttribute("event-name");
             if (!names) continue;
-            
+
             names.split(",").forEach(name => {
                 name = name.trim();
                 if (name && !processedNames.has(name)) {
@@ -222,7 +222,7 @@ const CoCreateEvents = {
                 { attr: "stop-propagation", method: "stopPropagation" },
                 { attr: "stop-immediate-propagation", method: "stopImmediatePropagation" }
             ];
-            
+
             for (const { attr, method } of lifecycleAttributes) {
                 const attrValue = target.getAttribute(`${prefix}-${attr}`);
                 if (attrValue !== null && attrValue !== "false") {
@@ -240,7 +240,7 @@ const CoCreateEvents = {
         let attributeFilter = (el.getAttribute(`${prefix}-attribute-filter`) || "")
             .split(/\s*,\s*/)
             .filter(item => item);
-        
+
         let types = (el.getAttribute(`${prefix}-types`) || "")
             .split(/\s*,\s*/)
             .filter(item => item);
@@ -289,8 +289,8 @@ const CoCreateEvents = {
         const trigger = el.getAttribute(`${prefix}-trigger`) || "both";
 
         const root = rootSelector ? document.querySelector(rootSelector) : null;
-        const validThreshold = Array.isArray(threshold) 
-            ? threshold.filter(v => v >= 0 && v <= 1) 
+        const validThreshold = Array.isArray(threshold)
+            ? threshold.filter(v => v >= 0 && v <= 1)
             : [0];
 
         const once = el.getAttribute(`${prefix}-once`);
@@ -327,14 +327,14 @@ const CoCreateEvents = {
         // 1. Determine targets based on prefix-group
         let sourceElements = [rootElement];
         const sourceGroup = rootElement.getAttribute(`${prefix}-group`);
-        
+
         if (sourceGroup) {
             sourceElements = document.querySelectorAll(`[${prefix}-group="${sourceGroup}"]`);
         }
 
         // 2. Iterate through sourceElements
         for (const sourceElement of sourceElements) {
-            
+
             // --- Global Options (Dash) ---
 
             // onEvent
@@ -353,18 +353,18 @@ const CoCreateEvents = {
             const intervalAttr = sourceElement.getAttribute(`${prefix}-set-interval`);
             if (intervalAttr !== null) {
                 const intervalMs = parseInt(intervalAttr, 10) || 0;
-                
+
                 if (!sourceElement.eventsInterval) {
                     sourceElement.eventsInterval = {};
                 }
-                
+
                 const currentInterval = sourceElement.eventsInterval[prefix];
 
                 if (intervalMs > 0) {
                     // Start or update interval
                     if (!currentInterval || currentInterval.delay !== intervalMs) {
                         if (currentInterval) clearInterval(currentInterval.id);
-                        
+
                         sourceElement.eventsInterval[prefix] = {
                             delay: intervalMs,
                             id: setInterval(() => {
@@ -401,7 +401,7 @@ const CoCreateEvents = {
 
             // once
             const onceAttr = sourceElement.getAttribute(`${prefix}-once`);
-            if (onceAttr !== null) { 
+            if (onceAttr !== null) {
                 if (!sourceElement.eventsOnce) {
                     sourceElement.eventsOnce = [prefix];
                 } else if (sourceElement.eventsOnce.includes(prefix)) {
@@ -412,7 +412,9 @@ const CoCreateEvents = {
             }
 
             // --- Resolve Targets ---
-            const querySelector = sourceElement.getAttribute(`${prefix}-query`);
+            // const querySelector = sourceElement.getAttribute(`${prefix}-query`);
+            const querySelector =
+                sourceElement.attributes[`${prefix}-query`]?.value;
             let targetElements = [sourceElement];
 
             if (querySelector || params) {
@@ -460,10 +462,10 @@ const CoCreateEvents = {
         // Iterate Attributes
         for (const attribute of sourceElement.attributes) {
             const name = attribute.name;
-            
+
             // Optimization: Skip if shorter than prefix + dot + min char
             if (name.length <= prefix.length + 1) continue;
-            
+
             // STRICT RULE: Only process attributes with DOT separator.
             // All options use Dash, so they will be ignored here.
             if (!name.startsWith(prefix) || name[prefix.length] !== '.') continue;
@@ -475,7 +477,7 @@ const CoCreateEvents = {
             let value = sourceElement.getAttribute(name);
             if (value === "$value" && sourceElement.getValue) {
                 value = await sourceElement.getValue();
-            } 
+            }
 
             // Parse CSV for rotation
             let values = [];
@@ -497,7 +499,7 @@ const CoCreateEvents = {
                         const styles = targetElement.getAttribute("style")
                             .split(";")
                             .map(x => x.trim().replace(/\s/g, ""));
-                        
+
                         oldValue = values.find(x => styles.includes(x.replace(/\s/g, ""))) || "";
                     }
                     newValue = this.__getNextValue(values, oldValue, deactivate);
@@ -527,7 +529,7 @@ const CoCreateEvents = {
 
                     if (oldValue) {
                         oldValue.split(" ").forEach(c => targetElement.classList.remove(c));
-                        if (values.length === 1 && !newValue) return; 
+                        if (values.length === 1 && !newValue) return;
                     }
 
                     if (newValue) {
@@ -537,9 +539,9 @@ const CoCreateEvents = {
 
                 case 'insertadjacenthtml':
                 case 'insertadjacenttext':
-                case 'insertAdjacentHTML': 
+                case 'insertAdjacentHTML':
                 case 'insertAdjacentText':
-                    const position = sourceElement.getAttribute(name);; 
+                    const position = sourceElement.getAttribute(name);;
                     if (!position) continue;
 
                     let content = "";
@@ -586,12 +588,12 @@ const CoCreateEvents = {
 
                 default:
                     // Generic handling: Try Property first, then Attribute
-                    
+
                     // 1. Try Property
                     if (targetElement[targetName] !== undefined) {
                         oldValue = targetElement[targetName];
                         if (!values.includes(oldValue) && typeof oldValue !== 'function') oldValue = "";
-                        
+
                         newValue = this.__getNextValue(values, oldValue, deactivate);
 
                         if (typeof targetElement[targetName] === 'function') {
@@ -599,12 +601,12 @@ const CoCreateEvents = {
                         } else {
                             targetElement[targetName] = newValue;
                         }
-                    } 
+                    }
                     // 2. Fallback to Attribute
                     else {
                         oldValue = targetElement.getAttribute(targetName);
                         if (!values.includes(oldValue)) oldValue = "";
-                        
+
                         newValue = this.__getNextValue(values, oldValue, deactivate);
 
                         // Handle Namespaced Attributes (e.g. svg:href) if encoded in name
