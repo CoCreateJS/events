@@ -273,8 +273,10 @@ const CoCreateEvents = {
         const resizeObserver = new ResizeObserver((entries) => {
             const lastEntry = entries[entries.length - 1];
             const { width } = lastEntry.contentRect;
-            // Keeps dash style for this status attribute
-            el.setAttribute(`${prefix}-if-value`, width + "px");
+            const widthValue = width + "px";
+            el.width = widthValue;
+            // Keeps dash style for conditional resize bindings.
+            el.setAttribute(`${prefix}-if-value`, widthValue);
             this.__updateElements(el, prefix);
         });
         resizeObserver.observe(el);
@@ -473,11 +475,8 @@ const CoCreateEvents = {
             // Extract target name (e.g., 'value', 'style', 'src', 'data-something')
             const targetName = name.substring(prefix.length + 1);
 
-            // Get Value
+            // getAttribute has AST built in and resolves a wide range of operators.
             let value = sourceElement.getAttribute(name);
-            if (value === "$value" && sourceElement.getValue) {
-                value = await sourceElement.getValue();
-            }
 
             // Parse CSV for rotation
             let values = [];

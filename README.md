@@ -329,7 +329,17 @@ Watch attributes instead of insertions:
 ### Resize
 
 ```html
-<div resize resize-query="$parent" resize.data-width="$value"></div>
+<div resize resize-query="$parent" resize.data-width="$width"></div>
+```
+
+The observed width, including its `px` unit, is available as `$width` and can
+be embedded in assignments:
+
+```html
+<aside
+    resize
+    resize-query="#page-topbar, .main-content"
+    resize.style="margin-right:$width"></aside>
 ```
 
 ---
