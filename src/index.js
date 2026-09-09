@@ -473,7 +473,7 @@ const CoCreateEvents = {
             if (!name.startsWith(prefix) || name[prefix.length] !== '.') continue;
 
             // Extract target name (e.g., 'value', 'style', 'src', 'data-something')
-            const targetName = name.substring(prefix.length + 1);
+            let targetName = name.substring(prefix.length + 1);
 
             // getAttribute has AST built in and resolves a wide range of operators.
             let value = sourceElement.getAttribute(name);
@@ -589,7 +589,9 @@ const CoCreateEvents = {
                     // Generic handling: Try Property first, then Attribute
 
                     // 1. Try Property
-                    if (targetElement[targetName] !== undefined) {
+                    if (targetElement[targetName] !== undefined || targetName.startsWith("$")) {
+                        if (targetName.startsWith("$"))
+                            targetName = targetName.substring(1)
                         oldValue = targetElement[targetName];
                         if (!values.includes(oldValue) && typeof oldValue !== 'function') oldValue = "";
 
