@@ -29,6 +29,26 @@ import { getAttribute } from "@cocreate/element-prototype/src/getAttribute.js";
 const CoCreateEvents = {
     elements: new Map(),
 
+    // Known targets initialize for every prefix without an additional marker.
+    // Arbitrary prefix.* properties and methods still opt in through
+    // [prefix], [prefix-group], or [prefix-query].
+    knownTargets: [
+        "class",
+        "src",
+        "href",
+        "value",
+        "hidden",
+        "disabled",
+        "checked",
+        "selected",
+        "aria-expanded",
+        "aria-hidden",
+        "aria-pressed",
+        "aria-current",
+        "textContent",
+        "innerHTML"
+    ],
+
     init: function (prefix, events) {
         if (prefix && events) {
             this.initPrefix(prefix, events);
@@ -105,7 +125,13 @@ const CoCreateEvents = {
         });
 
         // Updated selector to use dash for options: prefix-group, prefix-query
-        const selector = `[${prefix}], [${prefix}-group], [${prefix}-query]`;
+        const knownTargets = this.knownTargets.map(target => `[${prefix}\\.${target}]`);
+        const selector = [
+            `[${prefix}]`,
+            `[${prefix}-group]`,
+            `[${prefix}-query]`,
+            ...knownTargets
+        ].join(", ");
 
         observer.init({
             name: "CoCreateEventAttributes",
