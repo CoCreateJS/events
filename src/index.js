@@ -68,7 +68,8 @@ const CoCreateEvents = {
                 "resize": ["onload", "resize"],
                 "localstorage": ["onload"],
                 "focus": ["focus"],
-                "blur": ["blur"]
+                "blur": ["blur"],
+                "error": ["error"]
             };
 
             for (const [p, e] of Object.entries(defaults)) {
