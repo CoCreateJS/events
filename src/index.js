@@ -46,7 +46,8 @@ const CoCreateEvents = {
         "aria-pressed",
         "aria-current",
         "textContent",
-        "innerHTML"
+        "innerHTML",
+        "save"
     ],
 
     init: function (prefix, events) {
@@ -131,6 +132,7 @@ const CoCreateEvents = {
             `[${prefix}]`,
             `[${prefix}-group]`,
             `[${prefix}-query]`,
+            `[${prefix}-element]`,
             ...knownTargets
         ].join(", ");
 
@@ -501,6 +503,7 @@ const CoCreateEvents = {
 
             // Extract target name (e.g., 'value', 'style', 'src', 'data-something')
             let targetName = name.substring(prefix.length + 1);
+            const explicitMethod = targetName.startsWith("$");
 
             let values = [];
             let value = attribute.value;
@@ -618,6 +621,30 @@ const CoCreateEvents = {
                     }
                     break;
 
+                case 'insertadjacentelement':
+                case 'insertAdjacentElement':
+                    const elementPosition = sourceElement.getAttribute(name);
+                    const elementSelector =
+                        sourceElement.attributes.getNamedItem(`${prefix}-element`)?.value;
+                    if (!elementPosition || !elementSelector) continue;
+
+                    const elementsToInsert = queryElements({
+                        element: sourceElement,
+                        prefix,
+                        selector: elementSelector
+                    });
+                    const elementToInsert = elementsToInsert[0];
+                    if (
+                        elementToInsert &&
+                        typeof targetElement.insertAdjacentElement === 'function'
+                    ) {
+                        targetElement.insertAdjacentElement(
+                            elementPosition,
+                            elementToInsert
+                        );
+                    }
+                    break;
+
                 case 'value':
                     if (targetElement.getValue) {
                         oldValue = await targetElement.getValue();
@@ -639,8 +666,8 @@ const CoCreateEvents = {
                     // Generic handling: Try Property first, then Attribute
 
                     // 1. Try Property
-                    if (targetElement[targetName] !== undefined || targetName.startsWith("$")) {
-                        if (targetName.startsWith("$"))
+                    if (targetElement[targetName] !== undefined || explicitMethod) {
+                        if (explicitMethod)
                             targetName = targetName.substring(1)
                         oldValue = targetElement[targetName];
                         if (!values.includes(oldValue) && typeof oldValue !== 'function') oldValue = "";
@@ -648,7 +675,15 @@ const CoCreateEvents = {
                         newValue = this.__getNextValue(values, oldValue, deactivate);
 
                         if (typeof targetElement[targetName] === 'function') {
-                            targetElement[targetName](newValue);
+                            // A non-$ method binding with value=false disables
+                            // the action. Explicit $method bindings may still
+                            // intentionally pass false as an argument.
+                            if (
+                                explicitMethod ||
+                                (newValue !== false && newValue !== "false")
+                            ) {
+                                targetElement[targetName](newValue);
+                            }
                         } else {
                             targetElement[targetName] = newValue;
                         }

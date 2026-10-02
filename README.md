@@ -270,6 +270,7 @@ Available ranges are `xs`, `sm`, `md`, `lg`, and `xl`.
 | Option | Description |
 | ------ | ----------- |
 | `prefix-query` | Selector resolving the target elements |
+| `prefix-element` | Selector resolving the element to move with `prefix.insertAdjacentElement` |
 | `prefix-selector` | Selector observed by `observe`, keeping `-query` free for targets |
 | `prefix-group` | Links elements so activating one deactivates its peers |
 | `prefix-events` | Comma separated DOM events replacing the prefix defaults |
@@ -291,6 +292,17 @@ Available ranges are `xs`, `sm`, `md`, `lg`, and `xl`.
 | `<event>-composed` | Listener option, named after the DOM event |
 
 The module also writes status attributes you can bind against: `prefix-is-visible` during intersection changes and `prefix-if-value` carrying the observed width during resizes.
+
+`prefix.insertAdjacentElement` moves the first element matched by `prefix-element` to the requested position on the `prefix-query` target. Unlike the HTML/text variants, it passes the element itself rather than reading its value:
+
+```html
+<button
+	click-query="$document #preview-container"
+	click.insertAdjacentElement="beforeend"
+	click-element="$document #preview">
+	Show preview
+</button>
+```
 
 ---
 
