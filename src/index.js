@@ -242,7 +242,7 @@ const CoCreateEvents = {
             prefixData.prev = event.type;
 
             // Check for 'actions' blocking
-            const actionsAttr = target.getAttribute("actions") || "";
+            const actionsAttr = target.attributes.getNamedItem("actions")?.value || "";
             if (actionsAttr.includes(prefix)) return;
 
             // Handle lifecycle controls (using dash)
