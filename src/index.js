@@ -235,6 +235,14 @@ const CoCreateEvents = {
 
             const prefixData = elData[prefix];
 
+            // setValue() dispatches input/change events with detail.skip=true
+            // to prevent programmatic updates from re-entering event handlers.
+            if (
+                event.detail?.skip === true && prefixData.prev === event.type && ["input", "change"].includes(event.type)
+            ) {
+                return
+            }
+
             // Debounce/Prevent duplicate mouse events if needed
             if (prefixData.prev === event.type && ["mouseover", "mouseout"].includes(event.type)) {
                 return;
@@ -656,7 +664,14 @@ const CoCreateEvents = {
                     newValue = this.__getNextValue(values, oldValue, deactivate);
 
                     if (targetElement.setValue) {
-                        targetElement.setValue(newValue);
+                        if (
+                            targetElement === sourceElement &&
+                            ["input", "change"].includes(prefix)
+                        ) {
+                            targetElement.setValue(newValue, true);
+                        } else {
+                            targetElement.setValue(newValue);
+                        }
                     } else {
                         targetElement.value = newValue;
                     }
