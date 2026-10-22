@@ -235,10 +235,14 @@ const CoCreateEvents = {
 
             const prefixData = elData[prefix];
 
-            // setValue() dispatches input/change events with detail.skip=true
-            // to prevent programmatic updates from re-entering event handlers.
+            // A new checked state must propagate even after an earlier
+            // input/change event; CRUD updates use the same event path.
+            const selectionChanged =
+                (target.type === "checkbox" || target.type === "radio") &&
+                prefixData.checked !== target.checked;
             if (
-                event.detail?.skip === true && prefixData.prev === event.type && ["input", "change"].includes(event.type)
+                event.detail?.skip === true && prefixData.prev === event.type &&
+                ["input", "change"].includes(event.type) && !selectionChanged
             ) {
                 prefixData.prev = "";
                 return
@@ -249,6 +253,8 @@ const CoCreateEvents = {
                 return;
             }
             prefixData.prev = event.type;
+            if (target.type === "checkbox" || target.type === "radio")
+                prefixData.checked = target.checked;
 
             // Check for 'actions' blocking
             const actionsAttr = target.attributes.getNamedItem("actions")?.value || "";
@@ -584,13 +590,30 @@ const CoCreateEvents = {
                 case 'insertadjacenttext':
                 case 'insertAdjacentHTML':
                 case 'insertAdjacentText':
-                    const position = sourceElement.getAttribute(name);;
+                    const position = sourceElement.getAttribute(name);
                     if (!position) continue;
 
                     let content = "";
-                    if (sourceElement.getValue) {
-                        content = await sourceElement.getValue();
+                    if (sourceElement.hasAttribute(`${prefix}-value`)) {
+                        content = sourceElement.getAttribute(`${prefix}-value`);
+                    } else {
+                        const contentSelector = sourceElement.attributes
+                            .getNamedItem(`${prefix}-element`)?.value;
+                        let contentSource = sourceElement;
+                        if (contentSelector !== undefined) {
+                            [contentSource] = queryElements({
+                                element: sourceElement,
+                                prefix,
+                                selector: contentSelector
+                            });
+                            if (!contentSource) continue;
+                        }
+                        if (contentSource.getValue) content = contentSource.getValue();
                     }
+                    if (content && typeof content.then === 'function') {
+                        content = await content;
+                    }
+                    content ??= "";
 
                     // Check for CoCreate Rich Text integration
                     let domTextEditor = targetElement.parentElement?.closest("[contenteditable]");

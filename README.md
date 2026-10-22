@@ -270,7 +270,8 @@ Available ranges are `xs`, `sm`, `md`, `lg`, and `xl`.
 | Option | Description |
 | ------ | ----------- |
 | `prefix-query` | Selector resolving the target elements |
-| `prefix-element` | Selector resolving the element to move with `prefix.insertAdjacentElement` |
+| `prefix-element` | Selector resolving the element to move, or the value source for HTML/text insertion |
+| `prefix-value` | Evaluated content for HTML/text insertion; takes precedence over `prefix-element` |
 | `prefix-selector` | Selector observed by `observe`, keeping `-query` free for targets |
 | `prefix-group` | Links elements so activating one deactivates its peers |
 | `prefix-events` | Comma separated DOM events replacing the prefix defaults |
@@ -292,6 +293,16 @@ Available ranges are `xs`, `sm`, `md`, `lg`, and `xl`.
 | `<event>-composed` | Listener option, named after the DOM event |
 
 The module also writes status attributes you can bind against: `prefix-is-visible` during intersection changes and `prefix-if-value` carrying the observed width during resizes.
+
+HTML/text insertion reads `prefix-value` when present (including an empty string), otherwise the first `prefix-element` match's `getValue()`, otherwise the event source's `getValue()`. A missing explicit source inserts nothing. These options do not change the separate `prefix.value` action.
+
+```html
+<input
+    type="checkbox"
+    input-query="$this:checked $closest form #selected-skills"
+    input-value="$query($this:checked $parent $next).getValue()"
+    input.insertAdjacentHTML="beforeend" />
+```
 
 `prefix.insertAdjacentElement` moves the first element matched by `prefix-element` to the requested position on the `prefix-query` target. Unlike the HTML/text variants, it passes the element itself rather than reading its value:
 

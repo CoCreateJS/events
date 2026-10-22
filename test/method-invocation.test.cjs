@@ -133,3 +133,96 @@ test("an explicit $method binding can pass false intentionally", async () => {
     await context.CoCreateEvents.setValue(source, source, target, "input");
     assert.deepEqual(args, [false]);
 });
+
+function insertionSource(action, options = {}) {
+    const entries = { [`input.${action}`]: "beforeend", ...options };
+    const attributes = Object.entries(entries).map(([name, value]) => ({ name, value }));
+    attributes.getNamedItem = name => attributes.find(attribute => attribute.name === name);
+    return {
+        attributes,
+        hasAttribute: name => Object.hasOwn(entries, name),
+        getAttribute: name => entries[name] ?? null,
+        getValue: () => "event source"
+    };
+}
+
+test("HTML and text insertion prefer explicit input-value, including empty values", async () => {
+    for (const action of ["insertAdjacentHTML", "insertAdjacentText"]) {
+        for (const value of ["<span>Explicit content</span>", "", false, 0]) {
+            const source = insertionSource(action, { "input-value": value, "input-element": "#other" });
+            source.getValue = () => { throw new Error("Should not read the event source"); };
+            context.queryElements = () => { throw new Error("Explicit value should take precedence"); };
+            let received;
+            const target = { [action](position, content) { received = { position, content }; } };
+            await context.CoCreateEvents.setValue(source, source, target, "input");
+            assert.deepEqual(received, { position: "beforeend", content: value });
+        }
+    }
+});
+
+test("input-element supplies getValue content while the source element stays in place", async () => {
+    const source = insertionSource("insertAdjacentHTML", { "input-element": "$parent $next" });
+    const contentSource = { getValue: () => "<span>Copied chip</span>" };
+    context.queryElements = ({ element, selector }) => {
+        assert.equal(element, source);
+        assert.equal(selector, "$parent $next");
+        return [contentSource];
+    };
+    let content;
+    await context.CoCreateEvents.setValue(source, source, {
+        insertAdjacentHTML(position, value) { content = value; }
+    }, "input");
+    assert.equal(content, "<span>Copied chip</span>");
+});
+
+test("a missing input-element does not fall back to unrelated event-source content", async () => {
+    const source = insertionSource("insertAdjacentHTML", { "input-element": "#missing" });
+    context.queryElements = () => [];
+    let calls = 0;
+    await context.CoCreateEvents.setValue(source, source, {
+        insertAdjacentHTML() { calls++; }
+    }, "input");
+    assert.equal(calls, 0);
+});
+
+test("insertion retains the event-source fallback and awaits asynchronous content", async () => {
+    for (const explicit of [false, true]) {
+        const source = insertionSource("insertAdjacentHTML", explicit
+            ? { "input-value": Promise.resolve("asynchronous content") }
+            : {});
+        let content;
+        await context.CoCreateEvents.setValue(source, source, {
+            insertAdjacentHTML(position, value) { content = value; }
+        }, "input");
+        assert.equal(content, explicit ? "asynchronous content" : "event source");
+    }
+});
+
+test("a changed checkbox state propagates after a previous input event", () => {
+    const listeners = new Map();
+    const attributes = [];
+    attributes.getNamedItem = () => null;
+    const source = {
+        type: "checkbox",
+        checked: true,
+        attributes,
+        getAttribute: () => null,
+        addEventListener: (name, listener) => listeners.set(name, listener),
+        removeEventListener() {}
+    };
+    const events = context.CoCreateEvents;
+    const originalUpdate = events.__updateElements;
+    const states = [];
+    events.__updateElements = element => states.push(element.checked);
+    try {
+        events.initElements([source], "input", ["input"]);
+        const input = listeners.get("input");
+        input({ currentTarget: source, type: "input", detail: { skip: false } });
+        source.checked = false;
+        input({ currentTarget: source, type: "input", detail: { skip: true } });
+        input({ currentTarget: source, type: "input", detail: { skip: true } });
+        assert.deepEqual(states, [true, false]);
+    } finally {
+        events.__updateElements = originalUpdate;
+    }
+});
