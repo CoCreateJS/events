@@ -240,6 +240,7 @@ const CoCreateEvents = {
             if (
                 event.detail?.skip === true && prefixData.prev === event.type && ["input", "change"].includes(event.type)
             ) {
+                prefixData.prev = "";
                 return
             }
 
@@ -514,32 +515,14 @@ const CoCreateEvents = {
             const explicitMethod = targetName.startsWith("$");
 
             let values = [];
-            let value = attribute.value;
-            if (value.startsWith("(") && value.endsWith(")")) {
-                let depth = 0;
-                let start = 0;
-                for (let i = 0; i < value.length; i++) {
-                    const char = value.charCodeAt(i);
-                    if (char === 40) {
-                        depth++;
-                    } else if (char === 41) {
-                        depth--;
-                    } else if (char === 44 && depth === 0) {
-                        values.push(value.slice(start, i).trim().slice(1, -1));
-                        start = i + 1;
-                    }
-                }
-                values.push(value.slice(start).trim().slice(1, -1));
+            const value = sourceElement.getAttribute(name);
+            // Parse CSV for rotation
+            if (typeof value === 'string') {
+                values = value.split(',').map(v => v.trim());
+            } else if (Array.isArray(value)) {
+                values = value;
             } else {
-                value = sourceElement.getAttribute(name);
-                // Parse CSV for rotation
-                if (typeof value === 'string') {
-                    values = value.split(',').map(v => v.trim());
-                } else if (Array.isArray(value)) {
-                    values = value;
-                } else {
-                    values = [value];
-                }
+                values = [value];
             }
             // getAttribute has AST built in and resolves a wide range of operators.
 
