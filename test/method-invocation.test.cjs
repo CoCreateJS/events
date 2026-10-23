@@ -15,7 +15,79 @@ const context = {
     queryElements: () => [],
     getAttribute: () => undefined
 };
-vm.runInNewContext(code, context);
+const resolverCode = fs.readFileSync(
+    path.join(path.dirname(require.resolve("@cocreate/utils")), "modules/resolveProperty.js"), "utf8"
+).replace("export function resolveProperty", "function resolveProperty");
+vm.runInNewContext(resolverCode + "\n" + code, context);
+
+function bindingSource(name, value) {
+    return { attributes: [{ name, value }], getAttribute: () => value };
+}
+
+test("lowercased bindings resolve inherited methods and preserve their receiver", async () => {
+    class Target {
+        customMethod(value) { this.received = value; }
+    }
+    for (const name of ["click.$custommethod", "click.custommethod"]) {
+        const source = bindingSource(name, "argument");
+        const target = new Target();
+        await context.CoCreateEvents.setValue(source, source, target, "click");
+        assert.equal(target.received, "argument");
+        assert.equal(Object.hasOwn(target, "custommethod"), false);
+    }
+});
+
+test("lowercased bindings write mixed-case properties, including undefined properties", async () => {
+    for (const initial of ["", undefined]) {
+        const source = bindingSource("input.textcontent", "updated");
+        const target = { textContent: initial };
+        await context.CoCreateEvents.setValue(source, source, target, "input");
+        assert.equal(target.textContent, "updated");
+        assert.equal(Object.hasOwn(target, "textcontent"), false);
+    }
+});
+
+test("unmatched ordinary bindings retain attribute fallback", async () => {
+    const source = bindingSource("click.data-state", "active");
+    let received;
+    const target = {
+        getAttribute: () => null,
+        setAttribute(name, value) { received = { name, value }; }
+    };
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.deepEqual(received, { name: "data-state", value: "active" });
+});
+
+test("ambiguous bindings reject", async () => {
+    for (const name of ["click.custommethod", "click.$custommethod"]) {
+        const source = bindingSource(name, "argument");
+        await assert.rejects(context.CoCreateEvents.setValue(source, source, {
+            customMethod() {}, custommethod() {}
+        }, "click"), /Ambiguous property/);
+    }
+});
+
+test("$ bindings assign new and existing properties without falling back to attributes", async () => {
+    const source = bindingSource("click.$customproperty", "updated");
+    for (const initial of [{}, { customProperty: "old" }, { customProperty: undefined }]) {
+        const target = Object.assign(initial, {
+            getAttribute() { assert.fail("Must not read an attribute"); },
+            setAttribute() { assert.fail("Must not write an attribute"); }
+        });
+        const key = Object.hasOwn(target, "customProperty") ? "customProperty" : "customproperty";
+        await context.CoCreateEvents.setValue(source, source, target, "click");
+        assert.equal(target[key], "updated");
+        assert.equal(Object.hasOwn(target, "$customproperty"), false);
+    }
+});
+
+test("$ bindings can assign a function value to a new property without invoking it", async () => {
+    const callback = () => assert.fail("Assigned function must not execute");
+    const source = bindingSource("click.$callback", callback);
+    const target = {};
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.equal(target.callback, callback);
+});
 
 test("$undefined is passed to a method as undefined", async () => {
     let args;

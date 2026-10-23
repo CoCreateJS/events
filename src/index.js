@@ -20,7 +20,7 @@
 // you must obtain a commercial license from CoCreate LLC.
 // For details, visit <https://cocreate.app/licenses/> or contact us at sales@cocreate.app.
 
-import { queryElements } from "@cocreate/utils";
+import { queryElements, resolveProperty } from "@cocreate/utils";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
@@ -518,7 +518,7 @@ const CoCreateEvents = {
 
             // Extract target name (e.g., 'value', 'style', 'src', 'data-something')
             let targetName = name.substring(prefix.length + 1);
-            const explicitMethod = targetName.startsWith("$");
+            const explicitProperty = targetName.startsWith("$");
 
             let values = [];
             const value = sourceElement.getAttribute(name);
@@ -686,10 +686,16 @@ const CoCreateEvents = {
                 default:
                     // Generic handling: Try Property first, then Attribute
 
-                    // 1. Try Property
-                    if (targetElement[targetName] !== undefined || explicitMethod) {
-                        if (explicitMethod)
-                            targetName = targetName.substring(1)
+                    // $ always selects a property, including one not yet defined.
+                    let propertyName;
+                    if (explicitProperty || (
+                        propertyName = resolveProperty(targetElement, targetName)
+                    ) !== undefined) {
+                        if (explicitProperty) {
+                            targetName = targetName.substring(1);
+                            propertyName = resolveProperty(targetElement, targetName);
+                        }
+                        targetName = propertyName ?? targetName;
                         oldValue = targetElement[targetName];
                         if (!values.includes(oldValue) && typeof oldValue !== 'function') oldValue = "";
 
@@ -697,10 +703,10 @@ const CoCreateEvents = {
 
                         if (typeof targetElement[targetName] === 'function') {
                             // A non-$ method binding with value=false disables
-                            // the action. Explicit $method bindings may still
+                            // the action. Explicit $ bindings may still
                             // intentionally pass false as an argument.
                             if (
-                                explicitMethod ||
+                                explicitProperty ||
                                 (newValue !== false && newValue !== "false")
                             ) {
                                 targetElement[targetName](newValue);

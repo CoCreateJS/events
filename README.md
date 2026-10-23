@@ -193,8 +193,16 @@ The name after the dot determines what is written.
 | `prefix.insertAdjacentHTML` | Inserts the source value at the given position, integrating with CoCreate rich text when inside `[contenteditable]` |
 | `prefix.insertAdjacentText` | Same as above, as plain text |
 | `prefix.<property>` | Any existing DOM property, for example `hidden`, `readonly`, `disabled`, `checked`, `textContent` |
-| `prefix.$<method>` | Invokes a DOM method with the resolved value; use `focus.$focus="$undefined"` for an optional argument |
+| `prefix.$<member>` | Always targets a JavaScript property: invokes an existing function or assigns the resolved value, creating the property if needed; use `focus.$focus="$undefined"` for an optional argument |
 | `prefix.<attribute>` | Any attribute when no matching property exists, for example `click.data-state` or `click.aria-expanded` |
+
+Property and method names in dot bindings are matched without case sensitivity,
+including inherited members: `click.textcontent` resolves to `textContent`, and
+`click.$custommethod` resolves to `customMethod`. Members must have unique names
+ignoring case; ambiguous bindings throw a `TypeError`. A leading `$` always
+selects a JavaScript property: existing functions are called, other members are
+assigned, and missing members are created using the name after `$`. Ordinary
+bindings with no matching property continue to write an HTML attribute.
 
 Valid positions for the insert assignments are `beforebegin`, `afterbegin`, `beforeend`, and `afterend`.
 
