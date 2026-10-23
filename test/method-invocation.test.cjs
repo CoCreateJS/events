@@ -20,6 +20,105 @@ const resolverCode = fs.readFileSync(
 ).replace("export function resolveProperty", "function resolveProperty");
 vm.runInNewContext(resolverCode + "\n" + code, context);
 
+test.before(async () => {
+    // Events executes with the browser AST scope, including $value.
+    const previousWindow = globalThis.window;
+    globalThis.window = {};
+    try {
+        context.astSync = (await import(path.join(
+            path.dirname(require.resolve("@cocreate/utils")), "modules/ast/index.js"
+        ))).astSync;
+    } finally {
+        if (previousWindow === undefined) delete globalThis.window;
+        else globalThis.window = previousWindow;
+    }
+});
+
+test("prefix objects expand between dotted attributes in declaration order", async () => {
+    const entries = [
+        ["click.$record", "before"],
+        ["click", JSON.stringify({ "$record": "inside", "$other": "second" })],
+        ["click.$finish", "after"]
+    ];
+    const calls = [];
+    const source = {
+        attributes: entries.map(([name, value]) => ({ name, value })),
+        getAttribute(name) {
+            assert.notEqual(name, "click", "Read the prefix through raw attributes");
+            return entries.find(([key]) => key === name)?.[1] ?? null;
+        }
+    };
+    const target = {
+        record: value => calls.push(value),
+        other: value => calls.push(value),
+        finish: value => calls.push(value)
+    };
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.deepEqual(calls, ["before", "inside", "second", "after"]);
+});
+
+test("prefix values evaluate at execution time without executing their keys on the source", async () => {
+    const source = {
+        attributes: [{ name: "input", value: JSON.stringify({ "$copy": "$value", "$textContent": "$this.current" }) }],
+        current: "before",
+        getValue() { return this.current; },
+        copy() { assert.fail("Do not execute object keys on the source"); },
+        getAttribute() { assert.fail("Object entries are not DOM attributes"); }
+    };
+    const target = { textContent: "", copy(value) { this.received = value; source.current = "after"; } };
+    await context.CoCreateEvents.setValue(source, source, target, "input");
+    assert.equal(target.received, "before");
+    assert.equal(target.textContent, "after");
+});
+
+test("prefix assignments retain typed values, rotation, and attribute fallback", async () => {
+    const source = {
+        attributes: [{ name: "click", value: JSON.stringify({
+            "$count": 0, "$enabled": false, "$options": { nested: true },
+            "$selected": ["one", "two"], "data-state": "active"
+        }) }],
+        getAttribute() { assert.fail("Must use raw prefix data"); }
+    };
+    const target = {
+        selected: "one",
+        getAttribute: () => null,
+        setAttribute(name, value) { this.attribute = { name, value }; }
+    };
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.equal(target.count, 0);
+    assert.equal(target.enabled, false);
+    assert.equal(target.options.nested, true);
+    assert.equal(target.selected, "two");
+    assert.deepEqual(target.attribute, { name: "data-state", value: "active" });
+});
+
+test("bare markers and unrelated attributes do not become assignments", async () => {
+    for (const value of ["", "marker"]) {
+        const source = {
+            attributes: [{ name: "click", value }, { name: "click-query", value: "#target" }],
+            getAttribute() { assert.fail("No assignments to read"); }
+        };
+        const target = {};
+        await context.CoCreateEvents.setValue(source, source, target, "click");
+        assert.deepEqual(target, {});
+    }
+});
+
+test("object insertion bindings use their passed position instead of reading a missing attribute", async () => {
+    const source = {
+        attributes: [{ name: "input", value: JSON.stringify({ insertAdjacentHTML: "beforeend" }) }],
+        hasAttribute: () => false,
+        getValue: () => "<span>Content</span>",
+        getAttribute() { assert.fail("Object insertion is not a dotted DOM attribute"); }
+    };
+    source.attributes.getNamedItem = () => null;
+    let received;
+    await context.CoCreateEvents.setValue(source, source, {
+        insertAdjacentHTML(position, content) { received = { position, content }; }
+    }, "input");
+    assert.deepEqual(received, { position: "beforeend", content: "<span>Content</span>" });
+});
+
 function bindingSource(name, value) {
     return { attributes: [{ name, value }], getAttribute: () => value };
 }

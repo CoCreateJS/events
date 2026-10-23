@@ -181,6 +181,43 @@ Override the events for any prefix with `-events`:
 
 ---
 
+## Prefix Objects
+
+The standalone prefix accepts a JSON object of assignments. Keys name the same
+targets as dot bindings; use `$` for explicit JavaScript properties and methods:
+
+```html
+<input
+    input-query="$document #preview"
+    input='{"$textContent": "$value"}' />
+<span id="preview"></span>
+```
+
+The object is read from the raw attribute value. Its keys are not executed as
+AST operators on the source element. Each value is evaluated through AST when
+its assignment executes, using the source element as `$this` and the value
+source for `$value`.
+
+Assignments execute in DOM attribute order. Object entries expand at the
+position of the prefix attribute, in JavaScript object enumeration order.
+Earlier dotted attributes run before them; later dotted attributes run after
+them. Repeated targets are preserved and run sequentially. For example:
+
+```html
+<button
+    click-query="$document #preview"
+    click.$record="before"
+    click='{"$record": "inside", "$finish": "next"}'
+    click.$record="after">Run</button>
+```
+
+Both forms use the existing assignment handlers, including value rotation.
+Arrays retain their existing rotation behavior. An empty prefix remains an
+initialization marker. Object keys retain their casing. Prefix JSON must be
+valid JSON; malformed object JSON throws during parsing.
+
+---
+
 ## Assignment Targets
 
 The name after the dot determines what is written.

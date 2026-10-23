@@ -20,7 +20,7 @@
 // you must obtain a commercial license from CoCreate LLC.
 // For details, visit <https://cocreate.app/licenses/> or contact us at sales@cocreate.app.
 
-import { queryElements, resolveProperty } from "@cocreate/utils";
+import { queryElements, resolveProperty, astSync } from "@cocreate/utils";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
@@ -505,8 +505,25 @@ const CoCreateEvents = {
 
         const deactivate = (rootElement !== sourceElement);
 
-        // Iterate Attributes
+        // Expand the prefix object in place, preserving attribute order.
+        const attributes = [];
         for (const attribute of sourceElement.attributes) {
+            if (attribute.name === prefix) {
+                const rawValue = attribute.value?.trim();
+                // An empty prefix remains an initialization marker.
+                if (!rawValue?.startsWith("{")) continue;
+
+                const assignments = JSON.parse(rawValue);
+                for (const [name, value] of Object.entries(assignments)) {
+                    attributes.push({ name: `${prefix}.${name}`, value, fromObject: true });
+                }
+            } else {
+                attributes.push(attribute);
+            }
+        }
+
+        // Execute both forms through the existing assignment handlers.
+        for (const attribute of attributes) {
             const name = attribute.name;
 
             // Optimization: Skip if shorter than prefix + dot + min char
@@ -521,7 +538,13 @@ const CoCreateEvents = {
             const explicitProperty = targetName.startsWith("$");
 
             let values = [];
-            const value = sourceElement.getAttribute(name);
+            const value = attribute.fromObject
+                ? astSync({
+                    executeAST: attribute.value,
+                    node: sourceElement,
+                    sandbox: { $this: sourceElement }
+                })
+                : sourceElement.getAttribute(name);
             // Parse CSV for rotation
             if (typeof value === 'string') {
                 values = value.split(',').map(v => v.trim());
@@ -530,7 +553,7 @@ const CoCreateEvents = {
             } else {
                 values = [value];
             }
-            // getAttribute has AST built in and resolves a wide range of operators.
+            // Object values and dotted attribute values resolve through AST.
 
             let oldValue = "";
             let newValue = "";
@@ -590,7 +613,7 @@ const CoCreateEvents = {
                 case 'insertadjacenttext':
                 case 'insertAdjacentHTML':
                 case 'insertAdjacentText':
-                    const position = sourceElement.getAttribute(name);
+                    const position = value;
                     if (!position) continue;
 
                     let content = "";
@@ -637,7 +660,7 @@ const CoCreateEvents = {
 
                 case 'insertadjacentelement':
                 case 'insertAdjacentElement':
-                    const elementPosition = sourceElement.getAttribute(name);
+                    const elementPosition = value;
                     const elementSelector =
                         sourceElement.attributes.getNamedItem(`${prefix}-element`)?.value;
                     if (!elementPosition || !elementSelector) continue;
