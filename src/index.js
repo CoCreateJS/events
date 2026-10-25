@@ -613,8 +613,8 @@ const CoCreateEvents = {
                 case 'insertadjacenttext':
                 case 'insertAdjacentHTML':
                 case 'insertAdjacentText':
-                    const position = value;
-                    if (!position) continue;
+                    if (!value) continue;
+                    const position = String(value).toLowerCase();
 
                     let content = "";
                     if (sourceElement.hasAttribute(`${prefix}-value`)) {
@@ -638,16 +638,18 @@ const CoCreateEvents = {
                     }
                     content ??= "";
 
-                    // Check for CoCreate Rich Text integration
-                    let domTextEditor = targetElement.parentElement?.closest("[contenteditable]");
-
-                    if (domTextEditor && typeof CoCreate !== 'undefined' && CoCreate.text) {
-                        CoCreate.text.insertAdjacentElement({
-                            domTextEditor,
-                            position,
-                            target: targetElement,
-                            elementValue: content
-                        });
+                    // Resolve adjacency to canonical source coordinates for editors.
+                    const editorPosition = targetElement.editorPosition;
+                    const editorElement = editorPosition?.editorElement;
+                    if (editorElement && (targetElement !== editorElement || ["afterbegin", "beforeend"].includes(position))) {
+                        const boundary = {
+                            beforebegin: "start", afterbegin: "contentStart",
+                            beforeend: "contentEnd", afterend: "end"
+                        }[position];
+                        const start = editorPosition[boundary];
+                        if (!Number.isInteger(start))
+                            throw new RangeError("Editor insertion requires a source position for the target.");
+                        await editorElement.editor.updateText({ start, length: 0, value: String(content) });
                     } else {
                         const isHtml = targetName.toLowerCase().includes('html');
                         if (isHtml) {

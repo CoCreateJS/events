@@ -123,6 +123,72 @@ function bindingSource(name, value) {
     return { attributes: [{ name, value }], getAttribute: () => value };
 }
 
+function editorInsertionSource(position, content) {
+    return {
+        attributes: [{ name: "click.insertAdjacentHTML", value: position }],
+        hasAttribute: name => name === "click-value",
+        getAttribute: name => name === "click-value" ? content : position
+    };
+}
+
+test("editor adjacency submits each shared source boundary without mutating the DOM", async () => {
+    const editorPosition = { start: 0, contentStart: 5, contentEnd: 12, end: 18 };
+    for (const [position, start] of Object.entries({ beforebegin: 0, afterbegin: 5, beforeend: 12, afterend: 18 })) {
+        let received;
+        const editor = { editor: { async updateText(data) { await Promise.resolve(); received = data; } } };
+        editorPosition.editorElement = editor;
+        const target = {
+            editorPosition,
+            parentElement: { closest() { assert.fail("Ownership should come from editorPosition"); } },
+            insertAdjacentHTML() { assert.fail("Editor insertion must update source first"); }
+        };
+        const source = editorInsertionSource(position, "<p>new</p>");
+        await context.CoCreateEvents.setValue(source, source, target, "click");
+        assert.equal(received.start, start);
+        assert.equal(received.length, 0);
+        assert.equal(received.value, "<p>new</p>");
+        assert.equal(target.editorPosition, editorPosition);
+    }
+});
+
+test("insertion inside an editor host uses its own API and current shared position", async () => {
+    let received;
+    const target = {
+        editorPosition: { contentStart: 0, contentEnd: 20 },
+        editor: { updateText(data) { received = data; } },
+        insertAdjacentHTML() { assert.fail("Must use editor source insertion"); }
+    };
+    target.editorPosition.editorElement = target;
+    const source = editorInsertionSource("BEFOREEND", "tail");
+    target.editorPosition.contentEnd = 25;
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.equal(received.start, 25);
+    assert.equal(received.value, "tail");
+});
+
+test("iframe descendants send source insertions to the wrapper's editor API", async () => {
+    let received;
+    const frame = { editor: { updateText(data) { received = data; } } };
+    const target = { editorPosition: { end: 37, editorElement: frame } };
+    const source = editorInsertionSource("afterend", "<hr />");
+    await context.CoCreateEvents.setValue(source, source, target, "click");
+    assert.equal(received.start, 37);
+    assert.equal(received.value, "<hr />");
+});
+
+test("missing editor positions and rejected updates never fall through to DOM insertion", async () => {
+    const source = editorInsertionSource("afterbegin", "text");
+    const target = {
+        editor: { updateText() { assert.fail("Missing positions must not be submitted"); } },
+        insertAdjacentHTML() { assert.fail("Must not bypass the editor"); }
+    };
+    target.editorPosition = { editorElement: target };
+    await assert.rejects(context.CoCreateEvents.setValue(source, source, target, "click"), /source position/);
+    target.editorPosition.contentStart = 5;
+    target.editor.updateText = async () => { throw new Error("commit failed"); };
+    await assert.rejects(context.CoCreateEvents.setValue(source, source, target, "click"), /commit failed/);
+});
+
 test("lowercased bindings resolve inherited methods and preserve their receiver", async () => {
     class Target {
         customMethod(value) { this.received = value; }
