@@ -26,6 +26,21 @@ import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
 import { getAttribute } from "@cocreate/element-prototype/src/getAttribute.js";
 
+function resolvePropertyPath(object, path) {
+    const segments = path.split(".");
+    let target = object;
+
+    for (let index = 0; index < segments.length; index++) {
+        if (target == null) return null;
+        const key = resolveProperty(target, segments[index]) || segments[index];
+        if (index === segments.length - 1)
+            return { target, key, value: target[key] };
+        target = target[key];
+    }
+
+    return null;
+}
+
 const CoCreateEvents = {
     elements: new Map(),
 
@@ -639,16 +654,31 @@ const CoCreateEvents = {
                     content ??= "";
 
                     // Resolve adjacency to canonical source coordinates for editors.
-                    const editorPosition = targetElement.editorPosition;
-                    const editorElement = editorPosition?.editorElement;
-                    if (editorElement && (targetElement !== editorElement || ["afterbegin", "beforeend"].includes(position))) {
-                        const boundary = {
+                    const currentEditor = targetElement.editor;
+                    const editorDetails = typeof currentEditor?.getStart === "function"
+                        ? currentEditor : targetElement.editorDetails;
+                    const editorElement = editorDetails?.element || editorDetails?.editorElement;
+                    if (editorElement?.editor?.updateText) {
+                        const point = editorDetails.getInsertionPoint?.(position);
+                        if (point) {
+                            await point.editor.updateText({ start: point.offset, length: 0, value: String(content) });
+                            break;
+                        }
+                        if (typeof editorDetails.getInsertionPoint === "function")
+                            throw new RangeError("Editor insertion position is not valid for this element.");
+                        const outerRange = editorDetails.getOuterRange?.();
+                        const contentRange = editorDetails.getContentRange?.();
+                        const legacyBoundary = {
                             beforebegin: "start", afterbegin: "contentStart",
                             beforeend: "contentEnd", afterend: "end"
                         }[position];
-                        const start = editorPosition[boundary];
-                        if (!Number.isInteger(start))
-                            throw new RangeError("Editor insertion requires a source position for the target.");
+                        const start = position === "beforebegin" ? outerRange?.start ?? editorDetails.start
+                            : position === "afterbegin" ? contentRange?.start ?? editorDetails.contentStart
+                                : position === "beforeend" ? contentRange?.end ?? editorDetails.contentEnd
+                                    : position === "afterend" ? outerRange?.end ?? editorDetails.end
+                                        : undefined;
+                        if (!legacyBoundary || !Number.isInteger(start))
+                            throw new RangeError("Editor insertion requires a current source range for the target.");
                         await editorElement.editor.updateText({ start, length: 0, value: String(content) });
                     } else {
                         const isHtml = targetName.toLowerCase().includes('html');
@@ -713,20 +743,33 @@ const CoCreateEvents = {
 
                     // $ always selects a property, including one not yet defined.
                     let propertyName;
+                    let propertyTarget = targetElement;
+                    let propertyValue;
                     if (explicitProperty || (
                         propertyName = resolveProperty(targetElement, targetName)
                     ) !== undefined) {
                         if (explicitProperty) {
-                            targetName = targetName.substring(1);
-                            propertyName = resolveProperty(targetElement, targetName);
+                            const propertyPath = resolvePropertyPath(
+                                targetElement,
+                                targetName.substring(1)
+                            );
+                            if (propertyPath) {
+                                propertyTarget = propertyPath.target;
+                                propertyName = propertyPath.key;
+                                propertyValue = propertyPath.value;
+                            } else {
+                                targetName = targetName.substring(1);
+                                propertyName = resolveProperty(targetElement, targetName);
+                            }
                         }
                         targetName = propertyName ?? targetName;
-                        oldValue = targetElement[targetName];
+                        propertyValue ??= propertyTarget[targetName];
+                        oldValue = propertyValue;
                         if (!values.includes(oldValue) && typeof oldValue !== 'function') oldValue = "";
 
                         newValue = this.__getNextValue(values, oldValue, deactivate);
 
-                        if (typeof targetElement[targetName] === 'function') {
+                        if (typeof propertyValue === 'function') {
                             // A non-$ method binding with value=false disables
                             // the action. Explicit $ bindings may still
                             // intentionally pass false as an argument.
@@ -734,10 +777,10 @@ const CoCreateEvents = {
                                 explicitProperty ||
                                 (newValue !== false && newValue !== "false")
                             ) {
-                                targetElement[targetName](newValue);
+                                propertyValue.call(propertyTarget, newValue);
                             }
                         } else {
-                            targetElement[targetName] = newValue;
+                            propertyTarget[targetName] = newValue;
                         }
                     }
                     // 2. Fallback to Attribute
