@@ -15,6 +15,46 @@
   "publishConfig": {
     "access": "public"
   },
+  "cocreate": {
+    "environment": [
+      "client"
+    ],
+    "interface": {
+      "schemaVersion": 1,
+      "summary": "A simple events component in vanilla javascript. Easily configured using HTML5 attributes and/or JavaScript API.",
+      "source": "src/index.js",
+      "declarative": {
+        "selectors": [
+          "[event-name]"
+        ],
+        "attributes": [
+          {
+            "name": "event-name"
+          },
+          {
+            "name": "style"
+          },
+          {
+            "name": "type"
+          }
+        ]
+      },
+      "api": {
+        "exports": [
+          "__getNextValue",
+          "__updateElements",
+          "_initIntersectionObserver",
+          "_initObserver",
+          "_initResizeObserver",
+          "elements",
+          "init",
+          "initElements",
+          "initPrefix",
+          "setValue"
+        ]
+      }
+    }
+  },
   "scripts": {
     "start": "webpack --config webpack.config.js",
     "build": "webpack --mode=production --config webpack.config.js",
