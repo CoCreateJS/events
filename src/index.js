@@ -20,7 +20,7 @@
 // you must obtain a commercial license from CoCreate LLC.
 // For details, visit <https://cocreate.app/licenses/> or contact us at sales@cocreate.app.
 
-import { queryElements, resolveProperty, astSync } from "@cocreate/utils";
+import { queryElements, resolveProperty, astAsync } from "@cocreate/utils";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
@@ -525,12 +525,27 @@ const CoCreateEvents = {
         for (const attribute of sourceElement.attributes) {
             if (attribute.name === prefix) {
                 const rawValue = attribute.value?.trim();
-                // An empty prefix remains an initialization marker.
-                if (!rawValue?.startsWith("{")) continue;
+                let assignments = null;
+                let assignmentsFromAst = false;
 
-                const assignments = JSON.parse(rawValue);
+                // An empty prefix remains an initialization marker.
+                if (!rawValue) continue;
+                if (rawValue?.startsWith("$")) {
+                    assignments = await sourceElement.getAttributeAsync(attribute.name);
+                    assignmentsFromAst = true;
+                } else if (rawValue.startsWith("{")) {
+                    assignments = JSON.parse(rawValue);
+                } else {
+                    continue;
+                }
+                if (!assignments || typeof assignments !== 'object') continue;
+
                 for (const [name, value] of Object.entries(assignments)) {
-                    attributes.push({ name: `${prefix}.${name}`, value, fromObject: true });
+                    attributes.push({
+                        name: `${prefix}.${name}`,
+                        value,
+                        fromObject: !assignmentsFromAst
+                    });
                 }
             } else {
                 attributes.push(attribute);
@@ -554,7 +569,7 @@ const CoCreateEvents = {
 
             let values = [];
             const value = attribute.fromObject
-                ? astSync({
+                ? await astAsync({
                     executeAST: attribute.value,
                     node: sourceElement,
                     sandbox: { $this: sourceElement }
