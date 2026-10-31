@@ -62,7 +62,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/cocreatejs/CoCreate-events.git"
+    "url": "git+https://github.com/cocreatejs/CoCreate-events.git"
   },
   "author": "CoCreate LLC",
   "license": "AGPL-3.0",
