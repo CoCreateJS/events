@@ -65,6 +65,11 @@ const CoCreateEvents = {
         "save"
     ],
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     init: function (prefix, events) {
         if (prefix && events) {
             this.initPrefix(prefix, events);
@@ -126,6 +131,11 @@ const CoCreateEvents = {
         });
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     initPrefix: function (prefix, events) {
         action.init({
             name: prefix,
@@ -166,10 +176,20 @@ const CoCreateEvents = {
             }
         });
 
+        /**
+         *
+ * @public
+ * @environment client
+ */
         const elements = document.querySelectorAll(selector);
         this.initElements(elements, prefix, events);
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     initElements: function (elements, prefix, events = []) {
         for (const el of elements) {
             let isEventable = true;
@@ -293,6 +313,11 @@ const CoCreateEvents = {
         }
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     _initObserver: function (el, prefix) {
         // Updated to dash: prefix-selector, prefix-query, prefix-attribute-filter, prefix-types
         let selector = el.getAttribute(`${prefix}-selector`) || el.getAttribute(`${prefix}-query`) || "";
@@ -328,6 +353,11 @@ const CoCreateEvents = {
         }
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     _initResizeObserver: function (el, prefix) {
         const resizeObserver = new ResizeObserver((entries) => {
             const lastEntry = entries[entries.length - 1];
@@ -341,6 +371,11 @@ const CoCreateEvents = {
         resizeObserver.observe(el);
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     _initIntersectionObserver: function (el, prefix) {
         // Updated to dash
         const rootSelector = el.getAttribute(`${prefix}-root`);
@@ -382,6 +417,11 @@ const CoCreateEvents = {
         intersectionObserver.observe(el);
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     __updateElements: async function (rootElement, prefix, events, params) {
         if (!rootElement.isConnected) return;
 
@@ -503,6 +543,11 @@ const CoCreateEvents = {
         );
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     setValue: async function (rootElement, sourceElement, targetElement, prefix, events) {
         // Handle Mouseout toggle logic
         if (events && events.includes("mouseout")) {
@@ -813,6 +858,11 @@ const CoCreateEvents = {
         }
     },
 
+    /**
+     *
+ * @public
+ * @environment client
+ */
     __getNextValue: function (values, val, deactivate) {
         if (deactivate) return "";
         const size = values.length;
@@ -828,3 +878,49 @@ const CoCreateEvents = {
 CoCreateEvents.init();
 
 export default CoCreateEvents;
+
+/**
+ *
+ * @name event-name
+ * @kind member
+ * @attribute
+ * @environment client
+ */
+
+/**
+ *
+ * @name style
+ * @kind member
+ * @attribute
+ * @environment client
+ */
+
+/**
+ *
+ * @name type
+ * @kind member
+ * @attribute
+ * @environment client
+ */
+
+/**
+ * A simple events component in vanilla javascript. Easily configured using HTML5 attributes and/or JavaScript API.
+ *
+ * @module events
+ * @environment client
+ */
+
+/**
+ * Declarative selectors recognized by this module.
+ *
+ * @name declarative-selectors
+ * @kind member
+ * @selectors
+ * @environment client
+ * @example
+ * ```json
+ * [
+ *   "[event-name]"
+ * ]
+ * ```
+ */
