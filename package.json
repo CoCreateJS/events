@@ -22,17 +22,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cocreatejs/CoCreate-events.git"
+    "url": "git+https://github.com/CoCreateJS/events.git"
   },
   "author": "CoCreate LLC",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/CoCreateJS/CoCreate-events/issues"
+    "url": "https://github.com/CoCreateJS/events/issues"
   },
   "homepage": "https://CoCreateJS.com/docs/events",
   "funding": {
     "type": "GitHub Sponsors ❤",
-    "url": "https://github.com/sponsors/CoCreate-app"
+    "url": "https://github.com/sponsors/CoCreateJS"
   },
   "main": "./src/index.js",
   "dependencies": {

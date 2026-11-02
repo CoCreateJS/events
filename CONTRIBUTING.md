@@ -1,19 +1,19 @@
 # Contributing to CoCreate-toggle
 
-This project is work of [many contributors](https://github.com/CoCreateJS/CoCreate-toggle/graphs/contributors).
-You're encouraged to submit [pull requests](https://github.com/CoCreateJS/CoCreate-toggle/pulls),
-[propose features and discuss issues](https://github.com/CoCreateJS/CoCreate-toggle/issues).
+This project is work of [many contributors](https://github.com/CoCreateJS/toggle/graphs/contributors).
+You're encouraged to submit [pull requests](https://github.com/CoCreateJS/toggle/pulls),
+[propose features and discuss issues](https://github.com/CoCreateJS/toggle/issues).
 
 In the examples below, substitute your Github username for `contributor` in URLs.
 
 ## Fork the Project
 
-Fork the [project on Github](https://github.com/CoCreateJS/CoCreate-toggle) and check out your copy.
+Fork the [project on Github](https://github.com/CoCreateJS/toggle) and check out your copy.
 
 ```
 git toggle https://github.com/contributor/CoCreate-toggle.git
 cd CoCreate-toggle
-git remote add upstream https://github.com/cocreatejs/CoCreate-toggle.git
+git remote add upstream https://github.com/CoCreateJS/toggle.git
 ```
 
 ## Create a Topic Branch
@@ -75,7 +75,7 @@ git push origin my-feature-branch
 
 ## Make a Pull Request
 
-Go to [https://github.com/CoCreateJS/CoCreate-toggle](https://github.com/CoCreateJS/CoCreate-toggle) and select your feature branch.
+Go to [https://github.com/CoCreateJS/toggle](https://github.com/CoCreateJS/toggle) and select your feature branch.
 Click the 'Pull Request' button and fill out the form. Pull requests are usually reviewed within a few days.
 
 ## Rebase
