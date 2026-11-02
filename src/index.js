@@ -882,24 +882,21 @@ export default CoCreateEvents;
 /**
  *
  * @name event-name
- * @kind member
- * @attribute
+ * @kind attribute
  * @environment client
  */
 
 /**
  *
  * @name style
- * @kind member
- * @attribute
+ * @kind attribute
  * @environment client
  */
 
 /**
  *
  * @name type
- * @kind member
- * @attribute
+ * @kind attribute
  * @environment client
  */
 
