@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/CoCreateJS/events/compare/v1.32.0...v2.0.0) (2026-11-02)
+
+
+### chore
+
+* record package identity migration as breaking ([89862b1](https://github.com/CoCreateJS/events/commit/89862b12e9aed7c293874dbf6511e0fe013a8177))
+
+
+### BREAKING CHANGES
+
+* Consumers must install @cocreate/events and use the renamed CoCreateJS repository identity; the previous package and repository identities are no longer supported.
+
 # [1.32.0](https://github.com/CoCreateJS/events/compare/v1.31.2...v1.32.0) (2026-11-02)
 
 
