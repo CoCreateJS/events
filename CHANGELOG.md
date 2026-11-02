@@ -1,3 +1,34 @@
+# [1.32.0](https://github.com/CoCreateJS/events/compare/v1.31.2...v1.32.0) (2026-11-02)
+
+
+### Bug Fixes
+
+* add Deno specific entries to .gitignore ([ffae6e4](https://github.com/CoCreateJS/events/commit/ffae6e40ad0b00d8f44f0814f724117d09b47285))
+* bump [@cocreate](https://github.com/cocreate) dependencies ([52aba92](https://github.com/CoCreateJS/events/commit/52aba92cbd2b158c2eff8dec19e0ab33c8d44796))
+* bump [@cocreate](https://github.com/cocreate) package versions ([47454fd](https://github.com/CoCreateJS/events/commit/47454fd215e910ad7825358d9a5091b86c6de13f))
+* bump versions ([df5672c](https://github.com/CoCreateJS/events/commit/df5672c8d4bb7488274e89fcfe3eef5410adb8a6))
+* bump versions ([399a2fb](https://github.com/CoCreateJS/events/commit/399a2fb4768728486c4050158b9241fce469b929))
+* enhance editor insertion handling and boundary resolution in CoCreateEvents ([7247d4a](https://github.com/CoCreateJS/events/commit/7247d4a37fe695da80691824869a10100736d8b9))
+* improve event handling and selector updates in CoCreateEvents ([0b5c19e](https://github.com/CoCreateJS/events/commit/0b5c19e587357d1ad7534fedffa1dbd51fb2337b))
+* remove trailing slash from node_modules entry in .gitignore ([d784a84](https://github.com/CoCreateJS/events/commit/d784a84d190e4e81de1566ad5bcbd27931f36f2c))
+* resolve editor property paths and insertions ([82ecf22](https://github.com/CoCreateJS/events/commit/82ecf221c2ff53f968b98d1e1b526800dfe82676))
+* resolve event property names without case sensitivity ([18caa25](https://github.com/CoCreateJS/events/commit/18caa255982882f62665007f5c176ef5314283d7))
+* update git url ([e60d29b](https://github.com/CoCreateJS/events/commit/e60d29bdfb398b9c91621c6b1f4faa2241d046fc))
+* update GitHub Actions to use latest versions and sync package.json description ([a2d84bf](https://github.com/CoCreateJS/events/commit/a2d84bf1962539d86e842f45acd9a84d316730c8))
+* update README to reflect @cocreate/events module details ([a5ca752](https://github.com/CoCreateJS/events/commit/a5ca752cdaa736890dce2e338fe5996d44efdee2))
+* update README to reflect @cocreate/events module details ([48a4262](https://github.com/CoCreateJS/events/commit/48a4262d78b5a80e00f46816d827616ecd3e2aa5))
+
+
+### Features
+
+* attribute name contains $ the name will be used as a property of the element ([9b57a6a](https://github.com/CoCreateJS/events/commit/9b57a6abf0e829be8852e6aa649236902ced4f81))
+* expose resize width to attribute expressions ([cd6aca2](https://github.com/CoCreateJS/events/commit/cd6aca2364798fae5c9f15dcf44589224a9450c1))
+* replace uuid import and usage with utils ([b8346f1](https://github.com/CoCreateJS/events/commit/b8346f1e1e3f5b5ca0ba4546dc3d85be8d7a54a4))
+* support AST event attribute maps ([4a78c6a](https://github.com/CoCreateJS/events/commit/4a78c6a0da556bdf771a1645884613c7868d19a3))
+* support declarative element method bindings ([4b09c26](https://github.com/CoCreateJS/events/commit/4b09c2652ff215ecde0c525c9edd97ce8f65412e))
+* support error event prefixes ([a245a2b](https://github.com/CoCreateJS/events/commit/a245a2b52cea9d6b4c2f03e2b78e05ebbed2c8b0))
+* support ordered assignments in event prefix objects ([85dd85c](https://github.com/CoCreateJS/events/commit/85dd85ccf829abe532f851eb285be661303f7eb4))
+
 ## [1.31.2](https://github.com/CoCreateJS/CoCreate-events/compare/v1.31.1...v1.31.2) (2026-07-19)
 
 
