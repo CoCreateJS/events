@@ -25,9 +25,7 @@ test.before(async () => {
     const previousWindow = globalThis.window;
     globalThis.window = {};
     try {
-        context.astSync = (await import(path.join(
-            path.dirname(require.resolve("@cocreate/utils")), "modules/ast/index.js"
-        ))).astSync;
+        context.astSync = (await import("../../ast/src/client.js")).astSync;
     } finally {
         if (previousWindow === undefined) delete globalThis.window;
         else globalThis.window = previousWindow;

@@ -20,7 +20,8 @@
 // you must obtain a commercial license from CoCreate LLC.
 // For details, visit <https://CoCreateJS.com/licenses/> or contact us at sales@CoCreateJS.com.
 
-import { queryElements, resolveProperty, astAsync } from "@cocreate/utils";
+import { queryElements, resolveProperty } from "@cocreate/utils";
+import { astAsync } from "@cocreate/ast/client";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
