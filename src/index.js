@@ -21,7 +21,7 @@
 // For details, visit <https://CoCreateJS.com/licenses/> or contact us at sales@CoCreateJS.com.
 
 import { queryElements, resolveProperty } from "@cocreate/utils";
-import { astAsync } from "@cocreate/ast/client";
+import { evaluateAsync } from "@cocreate/evaluate";
 import action from "@cocreate/actions";
 import observer from "@cocreate/observer";
 import "@cocreate/element-prototype";
@@ -615,7 +615,7 @@ const CoCreateEvents = {
 
             let values = [];
             const value = attribute.fromObject
-                ? await astAsync({
+                ? await evaluateAsync({
                     executeAST: attribute.value,
                     node: sourceElement,
                     sandbox: { $this: sourceElement }

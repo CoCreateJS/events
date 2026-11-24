@@ -25,7 +25,7 @@ test.before(async () => {
     const previousWindow = globalThis.window;
     globalThis.window = {};
     try {
-        context.astSync = (await import("../../ast/src/client.js")).astSync;
+        context.evaluateSync = (await import("../../evaluate/src/client.js")).evaluateSync;
     } finally {
         if (previousWindow === undefined) delete globalThis.window;
         else globalThis.window = previousWindow;
